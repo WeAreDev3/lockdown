@@ -5,6 +5,10 @@ var thinky = require('thinky')({db: 'password_manager'}),
 
 app.use(bodyParser.json());
 
+var config = {
+    port: process.env.PORT || 3000
+};
+
 var User = thinky.createModel('User', {
     id: String,
     firstName: String,
@@ -20,7 +24,7 @@ app.route('/').get(function (req, res) {
 app.route('/users')
     .get(function (req, res) {
         User.orderBy({index: 'firstName'}).run().then(function (users) {
-            res.json(users)
+            res.json(users);
         });
     })
     .post(function (req, res) {
@@ -39,8 +43,9 @@ app.route('/users/:id')
                 console.log('User %s %s removed from the database.', user.firstName, user.lastName);
                 res.status(204);
                 res.send();
-            })
+            });
         });
     });
 
-app.listen(process.env.PORT || 3000);
+app.listen(config.port);
+console.log('App listening on port %d', config.port);
