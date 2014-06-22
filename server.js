@@ -50,6 +50,14 @@ app.route('/signin')
         })(req, res, next);
     });
 
+
+app.route('/session')
+    // Delete the users's session, i.e. sign them out
+    .delete(function(req, res) {
+        req.logout();
+        res.send(204);
+    });
+
 app.route('/users')
     .get(auth.ensureAuthenticated, function(req, res) {
         User.orderBy({

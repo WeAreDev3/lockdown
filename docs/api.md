@@ -23,6 +23,11 @@ Creates a new user.
 - `username`: the user's username
 - `passHash`: the user's password, hashed with BCrypt
 
+#### Data received:
+- If the user was successfully created: `"USER ID"` with status 201 (Created)
+- If there is a username conflict: `{ "message": "..." }` with status 409 (Conflict)
+- If some data does not pass validation: `{ "message": "..." }` with status 400 (Bad Request)
+
 ## /signin
 
 ### POST
@@ -42,9 +47,9 @@ Authenticates user with given credentials.
 #### Data received:
 If successful, the server returns a 200 (OK) response with an empty body. If failed, the server returns a 401 (Unauthorized) response with an empty body.
 
-## /signout
+## /session
 
-### POST
+### DELETE
 Removes authorization token from user's current session (i.e., signs them out).
 
 #### Data received:
