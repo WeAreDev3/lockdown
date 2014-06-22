@@ -2,10 +2,14 @@ var thinky = require('thinky')({db: 'password_manager'}),
     app = require('express')(),
     bodyParser = require('body-parser'),
     r = thinky.r;
+    session = require('express-session'),
     passport = require('passport'),
     auth = require('./auth')(passport),
 
 app.use(bodyParser.json());
+app.use(session({
+    secret: 'much secret. very hidden. wow.'
+}));
 
 var config = {
     port: process.env.PORT || 3000
