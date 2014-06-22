@@ -3,6 +3,25 @@ Password Manager uses a RESTful API in obtaining resources for cross-platform ea
 
 **Note**: the server requires a `Content-Type: application/json` header on each resource request.
 
+## /users
+
+## POST
+Creates a new user.
+
+#### Data sent:
+```json
+{
+    "firstName": String,
+    "lastName": String,
+    "username": String,
+    "passHash": String
+}
+```
+
+- `firstName`: the user's first name
+- `lastName`: the user's last name
+- `username`: the user's username
+- `passHash`: the user's password, hashed with BCrypt
 
 ## /signin
 
