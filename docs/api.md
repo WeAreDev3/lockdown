@@ -39,11 +39,11 @@ Retrieves a list of all of the sites associated with the current user.
 #### Data received:
 ```json
 {
-    "sites": [String]
+    "sites": [ String ]
 }
 ```
 
-- `sites`: an array containing a list of all of the domains, in string form, associated with that user
+- `sites`: an array of all the domains the user has accounts to
 
 ### POST
 Adds a new site to the user's account.
@@ -53,8 +53,13 @@ Adds a new site to the user's account.
 {
     "domain": String,
     "name": String,
-    "username": String,
-    "password": String
+    "form": {
+        "name": String,
+        "data": [{
+            "name": String,
+            "value": String
+        }]
+    }
 }
 ```
 
@@ -62,11 +67,31 @@ Adds a new site to the user's account.
 - `name`: the name of the site to add
 - `username`: the username for the site
 - `password`: the password for the site
+- `form`: the form that the user submits
+    + `name`: name attribute of the form
+    + `data`: array of all the form data
+        * `name`: the inputs name or id attribute
+        * `value`: the inputs value
+        * These will be where the username and password are stored
 
 ## /sites/all
 
 ### GET
 Returns all of the data associated with all of the user's sites.
+
+#### Data received:
+```json
+{
+    "DOMAIN": [{
+        "name": String,
+        "username": String,
+        "password": String
+    }]
+}
+```
+
+- An object with domains as keys
+- `DOMAIN`: an array of account objects on the given domain
 
 ## /sites/:domain
 
