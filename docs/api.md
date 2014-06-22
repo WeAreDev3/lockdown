@@ -1,7 +1,7 @@
 # Password Manager REST API
 Password Manager uses a RESTful API in obtaining resources for cross-platform ease of use.
 
-**Note**: the server requires a 'Content-Type: application/json' header on each resource request.
+**Note**: the server requires a `Content-Type: application/json` header on each resource request.
 
 
 ## /signin
@@ -10,7 +10,6 @@ Password Manager uses a RESTful API in obtaining resources for cross-platform ea
 Authenticates user with given credentials.
 
 #### Data sent:
-`Content-Type: application/json`
 ```json
 {
     "username": String,
@@ -38,7 +37,6 @@ The server returns a 200 (OK) response with an empty body.
 Retrieves a list of all of the sites associated with the current user.
 
 #### Data received:
-`Content-Type: application/json`
 ```json
 {
     "sites": [String]
@@ -51,7 +49,6 @@ Retrieves a list of all of the sites associated with the current user.
 Adds a new site to the user's account.
 
 #### Data sent:
-`Content-Type: application/json`
 ```json
 {
     "domain": String,
@@ -77,7 +74,6 @@ Returns all of the data associated with all of the user's sites.
 Returns all of the data associated with that site.
 
 #### Data received:
-`Content-Type: application/json`
 ```json
 {
     "name": String,
@@ -94,7 +90,6 @@ Returns all of the data associated with that site.
 Updates the site data with the given data.
 
 #### Data sent:
-`Content-Type: application/json`
 ```json
 {
     "name": String,
