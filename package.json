@@ -1,10 +1,13 @@
 {
     "name": "Password-Manager",
     "version": "0.0.0",
+    "repository": "https://github.com/WeAreDev3/north-american-hipster.git",
     "dependencies": {
         "express": "latest",
         "body-parser": "latest",
         "thinky": "latest",
-        "rethinkdb": "latest"
+        "rethinkdb": "latest",
+        "passport": "latest",
+        "passport-local": "latest"
     }
 }
