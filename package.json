@@ -8,6 +8,7 @@
         "thinky": "latest",
         "rethinkdb": "latest",
         "passport": "latest",
-        "passport-local": "latest"
+        "passport-local": "latest",
+        "express-session": "^1.2.1"
     }
 }
