@@ -23,20 +23,24 @@ module.exports = function(passport, models) {
             index: 'username'
         }).run().then(function(user) {
             user = user[0];
-            
-            console.log(passHash, user.passHash);
 
-            if (passHash === user.passHash) {
-                return done(null, user);
+            if (user) {
+                if (passHash === user.passHash) {
+                    return done(null, user);
+                }
+
+                return done(null, false, {
+                    // Incorrect password
+                    message: 'Invalid password'
+                });
             }
 
             return done(null, false, {
-                message: 'Not correct!'
+                // Invalid username
+                message: 'No user found'
             });
         }, function(err) {
-            return done(err, false, {
-                message: 'Not correct!'
-            });
+            return done(err, false);
         });
     }));
 
