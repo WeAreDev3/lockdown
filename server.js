@@ -2,12 +2,16 @@ var thinky = require('thinky')({db: 'password_manager'}),
     app = require('express')(),
     bodyParser = require('body-parser'),
     r = thinky.r;
+    passport = require('passport'),
+    auth = require('./auth')(passport),
 
 app.use(bodyParser.json());
 
 var config = {
     port: process.env.PORT || 3000
 };
+app.use(passport.initialize());
+app.use(passport.session());
 
 var User = thinky.createModel('User', {
     id: String,
