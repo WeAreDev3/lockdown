@@ -2,14 +2,11 @@ var app = require('express')(),
     bodyParser = require('body-parser'),
     session = require('express-session'),
 
-    thinky = require('thinky')({
-        db: 'password_manager'
-    }),
-    models = require('./models')(thinky),
+    models = require('./models'),
     User = models.User,
 
     passport = require('passport'),
-    auth = require('./auth')(passport),
+    auth = require('./auth')(passport, models),
 
     config = {
         port: process.env.PORT || 3000
@@ -30,24 +27,71 @@ app.route('/').get(function(req, res) {
 });
 
 app.route('/signin')
-    .post(function(req, res) {
+    .post(function(req, res, next) {
+        passport.authenticate('local', function(err, user, info) {
+            if (err) {
+                return next(err);
+            }
 
+            if (!user) {
+                req.session.messages = [info.message];
+
+                // Credentials not correct, send 401 (Unauthorized)
+                return res.send(401);
+            }
+
+            req.logIn(user, function(err) {
+                if (err) {
+                    return next(err);
+                }
+
+                res.send(200);
+            });
+        })(req, res, next);
     });
 
 app.route('/users')
-    .get(function(req, res) {
+    .get(auth.ensureAuthenticated, function(req, res) {
         User.orderBy({
-            index: 'firstName'
+            index: 'username'
         }).run().then(function(users) {
             res.json(users);
+        }, function(err) {
+            res.json(err);
         });
     })
     .post(function(req, res) {
-        var user = new User(req.body);
-        user.save().then(function(user) {
-            console.log('User %s %s added to the database.', user.firstName, user.lastName);
-            res.status(201);
-            res.send(user.id);
+        User.run().then(function(users) {
+            var i = users.length,
+                user;
+
+            while (i--) {
+                if (req.body.username === users[i].username) {
+                    console.log('User %s %s was NOT created', req.body.firstName, req.body.lastName);
+
+                    // Username aleady exits, send 409 (Conflict)
+                    res.status(409);
+                    return res.send({
+                        message: 'A user with that username already exists'
+                    });
+                }
+            }
+
+            user = new User(req.body);
+            user.save().then(function(user) {
+                console.log('User %s %s added to the database.', user.firstName, user.lastName);
+
+                res.status(201);
+                res.send(user.id);
+            }, function(err) {
+                console.log('User %s %s was NOT created', user.firstName, user.lastName);
+                console.log(err.toString());
+
+                res.status(401);
+                res.send({
+                    message: err.toString()
+                });
+            });
         });
     });
 

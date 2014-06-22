@@ -1,18 +1,42 @@
 var LocalStrategy = require('passport-local').Strategy;
 
-module.exports = function(passport) {
+module.exports = function(passport, models) {
+    var User = models.User;
+
     passport.serializeUser(function(user, done) {
         done(null, user);
     });
 
     passport.deserializeUser(function(id, done) {
-        done(null, user);
+        User.get(id).run().then(function(user) {
+            done(null, user);
+        }, function(err) {
+            done(err);
+        });
     });
 
-    passport.use(new LocalStrategy(function(username, password, done) {
-        done(null, {
-            username: username,
-            password: password
+    passport.use(new LocalStrategy({
+        usernameField: 'username',
+        passwordField: 'passHash'
+    }, function(username, passHash, done) {
+        User.getAll(username, {
+            index: 'username'
+        }).run().then(function(user) {
+            user = user[0];
+            
+            console.log(passHash, user.passHash);
+
+            if (passHash === user.passHash) {
+                return done(null, user);
+            }
+
+            return done(null, false, {
+                message: 'Not correct!'
+            });
+        }, function(err) {
+            return done(err, false, {
+                message: 'Not correct!'
+            });
         });
     }));
 
@@ -22,8 +46,8 @@ module.exports = function(passport) {
                 return next();
             }
 
-            // Not signed in, send 403 (Forbidden)
-            res.send(403);
+            // Not signed in, send 401 (Unauthorized)
+            res.send(401);
         }
     };
 };
