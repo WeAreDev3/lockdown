@@ -9,6 +9,8 @@
         "rethinkdb": "latest",
         "passport": "latest",
         "passport-local": "latest",
-        "express-session": "^1.2.1"
+        "express-session": "^1.2.1",
+        "scrypt": "3.0.1",
+        "sjcl": "1.0.1"
     }
 }
