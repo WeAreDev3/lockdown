@@ -31,12 +31,14 @@ module.exports = function(passport, models) {
 
                 return done(null, false, {
                     // Incorrect password
+                    // TODO: Change to more ambiguous text
                     message: 'Invalid password'
                 });
             }
 
             return done(null, false, {
                 // Invalid username
+                // TODO: Change to more ambiguous text
                 message: 'No user found'
             });
         }, function(err) {
