@@ -3,12 +3,12 @@ var thinky = require('thinky')({
 });
 
 
-var User = thinky.createModel('User', {
-    id: String,
+var User = thinky.createModel('Users', {
     firstName: String,
     lastName: String,
     username: String,
-    passHash: String
+    passHash: String,
+    passSalt: String
 }, {
     enforce_type: 'strict' // Do not allow null to be a valid value
 });
