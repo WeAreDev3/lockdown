@@ -14,14 +14,14 @@ Creates a new user.
     "firstName": String,
     "lastName": String,
     "username": String,
-    "passHash": String
+    "password": String
 }
 ```
 
 - `firstName`: the user's first name
 - `lastName`: the user's last name
 - `username`: the user's username
-- `passHash`: the user's password, hashed with BCrypt
+- `password`: the user's password, to be hashed with Scrypt and PBKDF2
 
 #### Data received:
 - If the user was successfully created: `"USER ID"` with status 201 (Created)
@@ -42,7 +42,7 @@ Authenticates user with given credentials.
 ```
 
 - `username`: the user's username
-- `passHash`: the user's password, to be hashed with Scrypt
+- `password`: the user's password, to be hashed with Scrypt and PBKDF2
 
 #### Data received:
 If successful, the server returns a 200 (OK) response with an empty body. If failed, the server returns a 401 (Unauthorized) response with an empty body.
