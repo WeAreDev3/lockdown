@@ -37,12 +37,12 @@ Authenticates user with given credentials.
 ```json
 {
     "username": String,
-    "passHash": String
+    "password": String
 }
 ```
 
 - `username`: the user's username
-- `passHash`: the user's password, hashed with BCrypt
+- `passHash`: the user's password, to be hashed with Scrypt
 
 #### Data received:
 If successful, the server returns a 200 (OK) response with an empty body. If failed, the server returns a 401 (Unauthorized) response with an empty body.
