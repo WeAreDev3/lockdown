@@ -1,16 +1,16 @@
 var app = require('express')(),
     bodyParser = require('body-parser'),
     session = require('express-session'),
+    crypto = require('crypto'),
+    scrypt = require('scrypt'),
 
-    models = require('./models'),
-    User = models.User,
+    db = require('./db'),
+    User = db.User,
 
     passport = require('passport'),
-    auth = require('./auth')(passport, models),
+    auth = require('./auth')(passport, db),
 
-    config = {
-        port: process.env.PORT || 3000
-    };
+    config = require('./config');
 
 app.use(bodyParser.json());
 app.use(session({
@@ -76,7 +76,7 @@ app.route('/users')
         index: 'username'
     }).run().then(function(dupeUser) {
         if (dupeUser.length) {
-            console.log('Username "%s" already exits, %s %s', req.body.userame, req.body.firstName, req.body.lastName);
+            console.log('Username "%s" already exits, %s %s', req.body.username, req.body.firstName, req.body.lastName);
 
             // Username already exits, send 409 (Conflict)
             res.status(409);
@@ -85,32 +85,64 @@ app.route('/users')
             });
         }
 
-        user = new User(req.body);
-        user.save().then(function(user) {
-            console.log('User %s %s added to the database.', user.firstName, user.lastName);
+        newUser = {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            displayUsername: req.body.username,
+            username: req.body.username.toLowerCase(),
+            passIter: config.crypt.iterations,
+            passHashSize: config.crypt.hashSize,
+        };
 
-            res.status(201);
-            res.send(user.id);
-        }, function(err) {
-            console.log('User %s %s NOT created', user.firstName, user.lastName);
-            console.log(err.toString());
+        crypto.randomBytes(config.crypt.saltLength, function (er, randomBytes) {
+            if (er) {
+                
+            } else {
+                salt = randomBytes.toString('base64');
+                newUser.passSalt = salt;
+                crypto.pbkdf2(new Buffer(req.body.password), salt, config.crypt.iterations,
+                    config.crypt.hashSize, function (er, hash) {
+                        if (er) {
 
-            res.status(400);
-            res.send({
-                message: err.toString()
-            });
+                        } else {
+                            hash = hash.toString('base64');
+                            scrypt.passwordHash(hash, config.crypt.scryptParameters, function (er, finalHash) {
+                                if (er) {
+
+                                } else {
+                                    newUser.passHash = finalHash;
+                                    user = new User(newUser);
+                                    user.save().then(function(user) {
+                                        console.log('User %s %s added to the database.', user.firstName, user.lastName);
+
+                                        res.status(201);
+                                        res.send(user.id);
+                                    }, function(err) {
+                                        console.log('User %s %s NOT created', user.firstName, user.lastName);
+                                        console.log(err.toString());
+
+                                        res.status(400);
+                                        res.send({
+                                            message: err.toString()
+                                        });
+                                    });
+                                }
+                            });
+                        }
+                    });
+            }
         });
     });
 });
 
-app.route('/users/:id')
+app.route('/users/:username')
     .delete(auth.ensureAuthenticated, function(req, res) {
-        var id = req.params.id;
+        var username = req.params.username;
 
         // Only allow people to delete themselves 
-        if (id === req.user.id) {
-            User.get(req.params.id).run().then(function(user) {
-                user.delete().then(function(user) {
+        if (username === req.user.username) {
+            User.getAll(username, {index:'username'}).run().then(function(user) {
+                user[0].delete().then(function(user) {
                     console.log('User %s %s removed from the database.', user.firstName, user.lastName);
 
                     res.status(204);

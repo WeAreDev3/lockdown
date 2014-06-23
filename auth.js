@@ -1,14 +1,19 @@
-var LocalStrategy = require('passport-local').Strategy;
+var LocalStrategy = require('passport-local').Strategy,
+    scrypt = require('scrypt'),
+    crypto = require('crypto'),
+    scryptParameters = scrypt.params(0.1);
 
-module.exports = function(passport, models) {
-    var User = models.User;
+module.exports = function(passport, db) {
+    var User = db.User;
 
     passport.serializeUser(function(user, done) {
-        done(null, user.id);
+        done(null, user.username);
     });
 
-    passport.deserializeUser(function(id, done) {
-        User.get(id).run().then(function(user) {
+    passport.deserializeUser(function(username, done) {
+        User.getAll(username, {index: 'username'})
+        .run().then(function(user) {
+            user = user[0];
             done(null, user);
         }, function(err) {
             done(err);
@@ -17,30 +22,43 @@ module.exports = function(passport, models) {
 
     passport.use(new LocalStrategy({
         usernameField: 'username',
-        passwordField: 'passHash'
-    }, function(username, passHash, done) {
+        passwordField: 'password'
+    }, function(username, password, done) {
         User.getAll(username, {
             index: 'username'
-        }).run().then(function(user) {
+        })
+        .pluck('passHash', 'passSalt', 'passIter', 'passHashSize', 'username')
+        .run().then(function(user) {
             user = user[0];
 
             if (user) {
-                if (passHash === user.passHash) {
-                    return done(null, user);
-                }
+                crypto.pbkdf2(new Buffer(password), new Buffer(user.passSalt), user.passIter, user.passHashSize, function (er, hash) {
+                    if (!er) {
+                        scrypt.verifyHash(user.passHash, hash.toString('base64'), function (err, isValid) {
+                            if (err) {
+                                return done(err);
+                            }
 
+                            if (isValid) {
+                                return done(null, user);
+                            }
+                            return done(null, false, {
+                                // Incorrect password
+                                // TODO: Change to more ambiguous text
+                                message: 'Invalid password'
+                            });
+                        });
+                    } else {
+                        return done(er);
+                    }
+                });
+            } else {
                 return done(null, false, {
-                    // Incorrect password
+                    // Invalid username
                     // TODO: Change to more ambiguous text
-                    message: 'Invalid password'
+                    message: 'No user found'
                 });
             }
-
-            return done(null, false, {
-                // Invalid username
-                // TODO: Change to more ambiguous text
-                message: 'No user found'
-            });
         }, function(err) {
             return done(err, false);
         });
