@@ -81,7 +81,7 @@ app.route('/users')
             // Username already exits, send 409 (Conflict)
             res.status(409);
             return res.send({
-                message: 'A user with that username already exists'
+                message: 'Can not use that username'
             });
         }
 
