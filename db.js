@@ -3,7 +3,8 @@ var thinky = require('thinky')({
         min: 10
     }),
     r = thinky.r,
-    validator = require('validator');
+    validator = require('validator'),
+    config = require('./config');
 
 def = {
     User: thinky.createModel('Users', {
@@ -23,10 +24,17 @@ def = {
         username: {
             _type: String,
             validator: function (name) {
-                return validator.isLength(username, 3, 128);
+                return validator.isLength(name, 3, 128)
+                && validator.isAlphanumeric(name)
+                && validator.isLowercase(name);
             }
         },
-        passHash: String,
+        passHash: {
+            _type: String,
+            validator: function (hash) {
+                return hash.length === 128;
+            }
+        },
         passSalt: String,
         passIter: Number,
         passHashSize: Number,
@@ -40,12 +48,21 @@ def = {
         displayUsername: {
             _type: String,
             validator: function (username) {
-                return validator.isLength(username, 3, 64);
+                return validator.isLength(username, 3, 64)
+                && validator.isAlphanumeric(username);
             }
         },
         sites: {
             _type: Array,
             default: [],
+            schema: {
+                username: String,
+                password: String,
+                domain: String,
+                url: String,
+                program: String,
+                type: String
+            }
         },
         clientCrypt: {
             hashSize: Number,
@@ -57,11 +74,16 @@ def = {
             schema: {
                 hashSize: Number,
                 iter: Number,
-                salt: String
+                salt: {
+                    _type: String,
+                    validator: function (salt) {
+                        return salt.length === 32;
+                    }
+                }
             },
             options: {
                 enforce_type: 'strict',
-                enforce_missing: false
+                enforce_missing: false // temp. we need to build the code to support this
             }
         },
         email: {
@@ -69,6 +91,34 @@ def = {
             validator: function (email) {
                 return validator.isEmail(email);
             }
+        },
+        valid: {
+            _type: Object,
+            schema: {
+                confirmed: {
+                    _type: Boolean,
+                    default: false
+                },
+                token: {
+                    _type: String,
+                    validator: function(tkn) {
+                        return tkn.length === 4;
+                    };
+                },
+                link: {
+                    _type: String,
+                    validator: function(link) {
+                        return validator.isAlphanumeric(link)
+                        && validator.isLength(link, 64, 128);
+                    };
+                }
+            },
+            options: {
+                enforce_missing: false // temp. we need to build the code to support this
+            }
+        },
+        settings: {
+            _type: Object // more to come later
         }
     }, {
         enforce_type: 'strict', // Do not allow null to be a valid value
@@ -76,7 +126,23 @@ def = {
     }),
 
     Stats: thinky.createModel('Stats', {
-        id: String
+        id: String,
+        stat: {
+            _type: String,
+            options: {
+                enforce_missing: true;
+            }
+        },
+        timestamp: {
+            _type: Date,
+            default: r.now(),
+            options: {
+                enforce_extra: false
+            }
+        }
+    }, {
+        enforce_extra: true,
+        enforce_type: 'strict'
     }),
 
     Config: thinky.createModel('Config', {
@@ -88,7 +154,13 @@ def = {
                 enforce_extra: false
             }
         },
-        sessonSecret: String
+        sessonSecret: {
+            _type: String,
+            validator: function(secret) {
+                return validator.isLength(secret, 64, 128)
+                && validator.isAlphanumeric(secret);
+            };
+        }
     }),
 
     r: r
