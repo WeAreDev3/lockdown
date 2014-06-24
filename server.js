@@ -170,11 +170,12 @@ if (cluster.isWorker) {
         });
 
     app.listen(config.port, function() {
-        console.log('App listening on port %d', config.port);
+        //
     });
 } else {
     // master process runs this
     for (var i = 0; i < numCPUtoFork; i++) {
         cluster.fork();
     }
+    console.log('App listening on port %d', config.port);
 }

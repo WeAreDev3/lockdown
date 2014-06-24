@@ -91,7 +91,7 @@ def = {
         sessonSecret: String
     }),
 
-    r: thinky.r
+    r: r
 }
 def.User.ensureIndex('username');
 module.exports = def;
