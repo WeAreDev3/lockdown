@@ -83,7 +83,7 @@ if (cluster.isWorker) {
     })
     // Create a new user
     .post(function(req, res) {
-        User.getAll(req.body.username, {
+        User.getAll(req.body.username.toLowerCase(), {
             index: 'username'
         }).run().then(function(dupeUser) {
             if (dupeUser.length) {
