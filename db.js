@@ -21,7 +21,12 @@ var User = thinky.createModel('Users', {
         }
     },
     displayUsername: String,
-    sites: Array
+    sites: Array,
+    clientCrypt: {
+        hashSize: Number,
+        iter: Number,
+        salt: String
+    }
 }, {
     enforce_type: 'strict', // Do not allow null to be a valid value
     enforce_extra: true // do not allow extra data
