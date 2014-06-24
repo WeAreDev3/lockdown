@@ -1,14 +1,31 @@
 var thinky = require('thinky')({
-        db: 'lockdown'
+        db: 'lockdown',
+        min: 10
     }),
-    r = thinky.r;
+    r = thinky.r,
+    validator = require('validator');
 
 def = {
     User: thinky.createModel('Users', {
         id: String,
-        firstName: String,
-        lastName: String,
-        username: String,
+        firstName: {
+            _type: String,
+            validator: function (name) {
+                return validator.isLength(username, 3, 64);
+            }
+        },
+        lastName: {
+            _type: String,
+            validator: function (name) {
+                return validator.isLength(username, 3, 64);
+            }
+        },
+        username: {
+            _type: String,
+            validator: function (name) {
+                return validator.isLength(username, 3, 128);
+            }
+        },
         passHash: String,
         passSalt: String,
         passIter: Number,
@@ -20,12 +37,38 @@ def = {
                 enforce_extra: false
             }
         },
-        displayUsername: String,
-        sites: Array,
+        displayUsername: {
+            _type: String,
+            validator: function (username) {
+                return validator.isLength(username, 3, 64);
+            }
+        },
+        sites: {
+            _type: Array,
+            default: [],
+        },
         clientCrypt: {
             hashSize: Number,
             iter: Number,
             salt: String
+        },
+        clientCrypt: {
+            _type: Object,
+            schema: {
+                hashSize: Number,
+                iter: Number,
+                salt: String
+            },
+            options: {
+                enforce_type: 'strict',
+                enforce_missing: false
+            }
+        },
+        email: {
+            _type: String,
+            validator: function (email) {
+                return validator.isEmail(email);
+            }
         }
     }, {
         enforce_type: 'strict', // Do not allow null to be a valid value
@@ -47,7 +90,7 @@ def = {
         },
         sessonSecret: String
     }),
-    
+
     r: thinky.r
 }
 
