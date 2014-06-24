@@ -1,6 +1,18 @@
 {
-    "name": "Password-Manager",
-    "version": "0.0.0",
+    "name": "Lockdown",
+    "version": "0.0.1",
+    "description": "Password manager backend",
+    "author": "Dev3",
+    "contributors": [{
+            "name": "Tal Ben-Ari",
+            "email": "talbenari1@gmail.com"
+        }, {
+            "name": "Michael Edlinger",
+            "email": "mkeedlinger@gmail.com"
+        }, {
+            "name": "Jesse Smick",
+            "email": "janka102@gmail.com"
+    }],
     "repository": "https://github.com/WeAreDev3/north-american-hipster.git",
     "dependencies": {
         "express": "latest",
@@ -13,5 +25,9 @@
         "scrypt": "3.0.1",
         "sjcl": "1.0.1",
         "validator": "3.16.0"
-    }
+    },
+    "private": true,
+    "engines": {
+        "node": "0.10.28"
+    },
 }
