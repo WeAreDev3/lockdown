@@ -93,5 +93,5 @@ def = {
 
     r: thinky.r
 }
-
 def.User.ensureIndex('username');
+module.exports = def;
