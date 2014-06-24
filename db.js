@@ -103,14 +103,14 @@ def = {
                     _type: String,
                     validator: function(tkn) {
                         return tkn.length === 4;
-                    };
+                    }
                 },
                 link: {
                     _type: String,
                     validator: function(link) {
                         return validator.isAlphanumeric(link)
                         && validator.isLength(link, 64, 128);
-                    };
+                    }
                 }
             },
             options: {
@@ -118,7 +118,11 @@ def = {
             }
         },
         settings: {
-            _type: Object // more to come later
+            _type: Object, // more to come later
+            schema: {
+                passwordReminder: String
+            },
+            enforce_missing: false
         }
     }, {
         enforce_type: 'strict', // Do not allow null to be a valid value
@@ -130,7 +134,7 @@ def = {
         stat: {
             _type: String,
             options: {
-                enforce_missing: true;
+                enforce_missing: true
             }
         },
         timestamp: {
@@ -159,7 +163,7 @@ def = {
             validator: function(secret) {
                 return validator.isLength(secret, 64, 128)
                 && validator.isAlphanumeric(secret);
-            };
+            }
         }
     }),
 
