@@ -11,24 +11,53 @@ Creates a new user.
 #### Data sent:
 ```json
 {
-    "firstName": String,
-    "lastName": String,
+    "email": String,
     "username": String,
-    "password": String
+    "hash": String,
+    "salt": String,
+    "iter": Number,
+    "keyLength": Number
 }
 ```
 
-- `firstName`: the user's first name
-- `lastName`: the user's last name
+- `email`: the user's email, for verification
 - `username`: the user's username
-- `password`: the user's password, to be hashed with Scrypt and PBKDF2
+- `hash`: the user's password hashed with client PBKDF2
+- `salt`: the random salt used for hashing
+- `iter`: the number of iterations used in PBKDF2
+- `keyLength`: the key length for PBKDF2
 
 #### Data received:
-- If the user was successfully created: `"USER ID"` with status 201 (Created)
+- If the user was successfully created: status 201 (Created)
 - If there is a username conflict: `{ "message": "..." }` with status 409 (Conflict)
 - If some data does not pass validation: `{ "message": "..." }` with status 400 (Bad Request)
 
 ## /signin
+
+### GET
+Retrieves the user's client encryption information.
+
+#### Data sent:
+```json
+{
+    "username": String
+}
+```
+
+- `username`: the user's username
+
+#### Data received:
+```json
+{
+    "salt": String,
+    "iter": Number,
+    "keyLength": Number
+}
+```
+
+- `salt`: the salt used for client PBKDF2
+- `iter`: the number of iterations for client PBKDF2
+- `keyLength`: the key length for client PBKDF2
 
 ### POST
 Authenticates user with given credentials.
@@ -37,15 +66,15 @@ Authenticates user with given credentials.
 ```json
 {
     "username": String,
-    "password": String
-}
+    "clientHash": String
 ```
 
 - `username`: the user's username
-- `password`: the user's password, to be hashed with Scrypt and PBKDF2
+- `clientHash`: the user's password, hashed with client PBKDF2
 
 #### Data received:
-If successful, the server returns a 200 (OK) response with an empty body. If failed, the server returns a 401 (Unauthorized) response with an empty body.
+- If successful, the server returns a 200 (OK) response with an empty body.
+- If failed, the server returns a 401 (Unauthorized) response with an empty body.
 
 ## /session
 
