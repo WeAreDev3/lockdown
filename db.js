@@ -9,18 +9,6 @@ var thinky = require('thinky')({
 def = {
     User: thinky.createModel('Users', {
         id: String,
-        firstName: {
-            _type: String,
-            validator: function (name) {
-                return validator.isLength(username, 3, 64);
-            }
-        },
-        lastName: {
-            _type: String,
-            validator: function (name) {
-                return validator.isLength(username, 3, 64);
-            }
-        },
         username: {
             _type: String,
             validator: function (name) {
@@ -65,14 +53,9 @@ def = {
             }
         },
         clientCrypt: {
-            hashSize: Number,
-            iter: Number,
-            salt: String
-        },
-        clientCrypt: {
             _type: Object,
             schema: {
-                hashSize: Number,
+                keyLength: Number,
                 iter: Number,
                 salt: {
                     _type: String,
