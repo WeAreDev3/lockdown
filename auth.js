@@ -22,8 +22,8 @@ module.exports = function(passport, db) {
 
     passport.use(new LocalStrategy({
         usernameField: 'username',
-        passwordField: 'password'
-    }, function(username, password, done) {
+        passwordField: 'clientHash'
+    }, function(username, clientHash, done) {
         User.getAll(username, {
             index: 'username'
         })
@@ -32,7 +32,7 @@ module.exports = function(passport, db) {
             user = user[0];
 
             if (user) {
-                crypto.pbkdf2(new Buffer(password), new Buffer(user.passSalt), user.passIter, user.passHashSize, function (er, hash) {
+                crypto.pbkdf2(new Buffer(clientHash), new Buffer(user.passSalt), user.passIter, user.passHashSize, function (er, hash) {
                     if (!er) {
                         scrypt.verifyHash(user.passHash, hash.toString('base64'), function (err, isValid) {
                             if (err) {

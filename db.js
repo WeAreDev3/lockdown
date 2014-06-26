@@ -41,8 +41,8 @@ def = {
             }
         },
         sites: {
-            _type: Array,
-            default: [],
+            _type: Object,
+            default: {},
             schema: {
                 username: String,
                 password: String,
