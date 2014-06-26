@@ -97,8 +97,6 @@ if (cluster.isWorker) {
             }
 
             newUser = {
-                firstName: req.body.firstName,
-                lastName: req.body.lastName,
                 displayUsername: req.body.username,
                 username: req.body.username.toLowerCase(),
                 passIter: config.crypt.iterations,
