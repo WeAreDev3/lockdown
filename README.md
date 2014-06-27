@@ -1,5 +1,4 @@
-north-american-hipster
-======================
+# Lockdown
 
 A cross-platform password manager
 
