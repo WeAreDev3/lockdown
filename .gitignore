@@ -1,3 +1,9 @@
-node_modules
+# NodeJS
+node_modules/
 npm-debug.log
+
+# RethinkDB
 rethinkdb_data
+
+# Mac
+.DS_Store
