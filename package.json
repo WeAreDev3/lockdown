@@ -4,15 +4,18 @@
     "description": "Password manager backend",
     "author": "Dev3",
     "contributors": [{
-            "name": "Tal Ben-Ari",
-            "email": "talbenari1@gmail.com"
-        }, {
-            "name": "Michael Edlinger",
-            "email": "mkeedlinger@gmail.com"
-        }, {
-            "name": "Jesse Smick",
-            "email": "janka102@gmail.com"
+        "name": "Tal Ben-Ari",
+        "email": "talbenari1@gmail.com"
+    }, {
+        "name": "Michael Edlinger",
+        "email": "mkeedlinger@gmail.com"
+    }, {
+        "name": "Jesse Smick",
+        "email": "janka102@gmail.com"
     }],
+    "scripts": {
+        "prestart": "npm install"
+    },
     "repository": "https://github.com/WeAreDev3/north-american-hipster.git",
     "dependencies": {
         "express": "latest",
