@@ -1,6 +1,6 @@
 var app = require('express')(),
     bodyParser = require('body-parser'),
-    session = require('express-session'),
+    session = require('cookie-session'),
     crypto = require('crypto'),
     scrypt = require('scrypt'),
     os = require('os'),
