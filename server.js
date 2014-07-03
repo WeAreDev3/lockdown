@@ -149,6 +149,13 @@ if (cluster.isWorker) {
                         message: err.toString()
                     });
                 });
+        }, function (err) {
+            console.log(err.toString());
+
+            res.status(400);
+            res.send({
+                message: "Database error. Try again"
+            });
         });
     });
 
