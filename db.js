@@ -22,7 +22,7 @@ def = {
             }
         },
         passSalt: String,
-        passHashVershion: {
+        passHashVersion: {
             _type: Number,
             default: 1
         }
