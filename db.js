@@ -1,7 +1,7 @@
 var thinky = require('thinky')({
-    db: 'lockdown',
-    min: 10
-}),
+        db: 'lockdown',
+        min: 10
+    }),
     r = thinky.r,
     validator = require('validator'),
     config = require('./config');
