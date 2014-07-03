@@ -6,7 +6,6 @@ var LocalStrategy = require('passport-local').Strategy,
 
 // promisify
 crypto.pbkdf2 = Promise.promisify(crypto.pbkdf2);
-scrypt.verifyHash = Promise.promisify(scrypt.verifyHash);
 
 module.exports = function(passport, db) {
     var User = db.User;
@@ -38,33 +37,38 @@ module.exports = function(passport, db) {
             .run().then(function(user) {
                 user = user[0];
 
-            if (user) {
-                crypto.pbkdf2(new Buffer(clientHash), new Buffer(user.passSalt), user.passIter, user.passHashSize)
-                .then(function (hash) {
-                    return scrypt.verifyHash(user.passHash, hash.toString('base64');
-                }).then(function (isValid) {
-                    if (isValid) {
-                        return done(null, user);
-                    } else {
-                        return done(null, false, {
-                            // Incorrect password
-                            // TODO: Change to more ambiguous text
-                            message: 'Invalid password'
+                if (user) {
+                    crypto.pbkdf2(new Buffer(clientHash), new Buffer(user.passSalt), user.passIter, user.passHashSize)
+                        .then(function(hash) {
+                            // Can't find a way to convert scrypt.verifyHash into a promise
+                            scrypt.verifyHash(user.passHash, hash.toString('base64'), function(err, isValid) {
+                                if (err) {
+                                    done(err, false);
+                                } else {
+                                    if (isValid) {
+                                        done(null, user);
+                                    } else {
+                                        done(null, false, {
+                                            // Incorrect password
+                                            // TODO: Change to more ambiguous text
+                                            message: 'Invalid password'
+                                        });
+                                    }
+                                }
+                            });
+                        }, function(err) {
+                            done(err);
                         });
-                    }
-                }, function (err) {
-                    return done(err);
-                })
-            } else {
-                return done(null, false, {
-                    // Invalid username
-                    // TODO: Change to more ambiguous text
-                    message: 'No user found'
-                });
-            }
-        }, function(err) {
-            return done(err, false);
-        });
+                } else {
+                    done(null, false, {
+                        // Invalid username
+                        // TODO: Change to more ambiguous text
+                        message: 'No user found'
+                    });
+                }
+            }, function(err) {
+                done(err, false);
+            });
     }));
 
     return {
