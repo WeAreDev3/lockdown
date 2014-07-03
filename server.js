@@ -45,6 +45,16 @@ if (cluster.isWorker) {
     });
 
     app.route('/signin')
+        .get(function(req, res, next) {
+            User.getAll(req.query.username.toLowerCase(), {
+                index: 'username'
+            }).run().then(function(clientCrypt) {
+                console.log(clientCrypt);
+                if (clientCrypt.length) {
+                    res.send(clientCrypt[0].clientCrypt);
+                }
+            });
+        })
     // Sign in the user
     .post(function(req, res, next) {
         passport.authenticate('local', function(err, user, info) {
