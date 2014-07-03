@@ -191,4 +191,15 @@ if (cluster.isWorker) {
         cluster.fork();
     }
     console.log('App listening on port %d', config.port);
+
+    // Cluster helpers
+    cluster.on('exit', function(worker, code, signal) {
+        // when a worker dies
+        console.log('worker %d died (%s). restarting...', worker.process.pid, signal || code);
+        cluster.fork();
+    });
+    cluster.on('online', function(worker) {
+        // when a worker is succcessfully spawned
+        console.log("Yay, the worker responded after it was forked");
+    });
 }
