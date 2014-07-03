@@ -1,7 +1,12 @@
 var LocalStrategy = require('passport-local').Strategy,
+    Promise = require('bluebird'),
     scrypt = require('scrypt'),
     crypto = require('crypto'),
     scryptParameters = scrypt.params(0.1);
+
+//promisify
+crypto.pbkdf2 = Promise.promisify(crypto.pbkdf2);
+scrypt.verifyHash = Promise.promisify(scrypt.verifyHash);
 
 module.exports = function(passport, db) {
     var User = db.User;
@@ -32,26 +37,22 @@ module.exports = function(passport, db) {
             user = user[0];
 
             if (user) {
-                crypto.pbkdf2(new Buffer(clientHash), new Buffer(user.passSalt), user.passIter, user.passHashSize, function (er, hash) {
-                    if (!er) {
-                        scrypt.verifyHash(user.passHash, hash.toString('base64'), function (err, isValid) {
-                            if (err) {
-                                return done(err);
-                            }
-
-                            if (isValid) {
-                                return done(null, user);
-                            }
-                            return done(null, false, {
-                                // Incorrect password
-                                // TODO: Change to more ambiguous text
-                                message: 'Invalid password'
-                            });
-                        });
+                crypto.pbkdf2(new Buffer(clientHash), new Buffer(user.passSalt), user.passIter, user.passHashSize)
+                .then(function (hash) {
+                    return scrypt.verifyHash(user.passHash, hash.toString('base64');
+                }).then(function (isValid) {
+                    if (isValid) {
+                        return done(null, user);
                     } else {
-                        return done(er);
+                        return done(null, false, {
+                            // Incorrect password
+                            // TODO: Change to more ambiguous text
+                            message: 'Invalid password'
+                        });
                     }
-                });
+                }, function (err) {
+                    return done(err);
+                })
             } else {
                 return done(null, false, {
                     // Invalid username

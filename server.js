@@ -77,16 +77,6 @@ if (cluster.isWorker) {
     });
 
     app.route('/users')
-    // Get a list of all the users
-    .get(auth.ensureAuthenticated, function(req, res) {
-        User.orderBy({
-            index: 'username'
-        }).run().then(function(users) {
-            res.json(users);
-        }, function(err) {
-            res.json(err);
-        });
-    })
     // Create a new user
     .post(function(req, res) {
         User.getAll(req.body.username.toLowerCase(), {
