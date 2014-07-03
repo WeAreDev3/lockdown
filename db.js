@@ -22,6 +22,10 @@ def = {
             }
         },
         passSalt: String,
+        passHashVershion: {
+            _type: Number,
+            default: 1
+        }
         passIter: Number,
         passHashSize: Number,
         timestamp: {
