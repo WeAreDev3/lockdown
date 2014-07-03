@@ -102,7 +102,6 @@ def = {
                 }
             },
             options: {
-                enforce_missing: false, // temp. we need to build the code to support this
                 enforce_type: 'loose'
             }
         },
