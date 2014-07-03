@@ -13,7 +13,7 @@ Creates a new user.
 {
     "email": String,
     "username": String,
-    "hash": String,
+    "clientHash": String,
     "salt": String,
     "iter": Number,
     "keyLength": Number
@@ -22,7 +22,7 @@ Creates a new user.
 
 - `email`: the user's email, for verification
 - `username`: the user's username
-- `hash`: the user's password hashed with client PBKDF2
+- `clientHash`: the user's password hashed with client PBKDF2
 - `salt`: the random salt used forclient hashing
 - `iter`: the number of iterations used in client PBKDF2
 - `keyLength`: the key length for client PBKDF2
