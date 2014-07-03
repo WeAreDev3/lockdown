@@ -60,13 +60,12 @@ def = {
                 salt: {
                     _type: String,
                     validator: function (salt) {
-                        return salt.length === 32;
+                        return salt.length === 44;
                     }
                 }
             },
             options: {
-                enforce_type: 'strict',
-                enforce_missing: false // temp. we need to build the code to support this
+                enforce_type: 'strict'
             }
         },
         email: {

@@ -23,6 +23,7 @@ if (numCPUtoFork >= 12) {
 } else if (numCPUtoFork > 1) {
     numCPUtoFork--;
 }
+
 if (cluster.isWorker) {
     // promisify functions here
     crypto.randomBytes = Promise.promisify(crypto.randomBytes);
@@ -97,36 +98,40 @@ if (cluster.isWorker) {
                 username: req.body.username.toLowerCase(),
                 passIter: config.crypt.iterations,
                 passHashSize: config.crypt.hashSize,
-                email: req.body.email
+                email: req.body.email,
+                clientCrypt: {
+                    keyLength: req.body.keyLength,
+                    iter: req.body.iter,
+                    salt: req.body.salt
+                }
             };
 
             crypto.randomBytes(config.crypt.saltLength)
                 .then(function(randomBytes) {
-                    console.log(1);
-                    salt = randomBytes.toString('base64');
+                    var salt = randomBytes.toString('base64');
                     newUser.passSalt = salt;
+
                     return crypto.pbkdf2(new Buffer(req.body.password), salt,
                         config.crypt.iterations, config.crypt.hashSize);
                 })
                 .then(function(hash) {
-                    console.log(2);
                     hash = hash.toString('base64');
+
                     return scrypt.passwordHash(hash, config.crypt.scryptParameters);
                 })
                 .then(function(finalHash) {
-                    console.log(3);
                     newUser.passHash = finalHash;
-                    user = new User(newUser);
+                    var user = new User(newUser);
+
                     return user.save();
                 })
                 .then(function(user) {
-                    console.log(4);
-                    console.log('User %s %s added to the database.', user.firstName, user.lastName);
+                    console.log('User %s added to the database.', user.displayUsername);
 
                     res.status(201);
                     res.send(user.id);
                 }, function(err) {
-                    console.log(5);
+                    console.log('User %s NOT added to the database.', user.displayUsername);
                     console.log(err.toString());
 
                     res.status(400);
@@ -162,9 +167,7 @@ if (cluster.isWorker) {
             }
         });
 
-    app.listen(config.port, function() {
-        //
-    });
+    app.listen(config.port);
 } else {
     // master process runs this
     for (var i = 0; i < numCPUtoFork; i++) {
