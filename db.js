@@ -117,22 +117,11 @@ def = {
 
     Stats: thinky.createModel('Stats', {
         id: String,
-        stat: {
-            _type: String,
-            options: {
-                enforce_missing: true
-            }
-        },
+        stat: String,
         timestamp: {
             _type: Date,
-            default: r.now(),
-            options: {
-                enforce_extra: false
-            }
+            default: r.now()
         }
-    }, {
-        enforce_extra: true,
-        enforce_type: 'strict'
     }),
 
     Config: thinky.createModel('Config', {
