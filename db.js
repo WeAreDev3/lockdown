@@ -94,11 +94,9 @@ def = {
                         return validator.isAlphanumeric(link)
                         && link.length === 64;
                     },
-                    default: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-                        .replace(/[xy]/g, function(c) {
-                        var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
-                        return v.toString(16);
-                    });
+                    default: 'xxxxxxxx'.replace(/x/g, function(c) {
+                        return (Math.random() * 1e16).toString(16).slice(0, 8);
+                    })
                 }
             },
             options: {
