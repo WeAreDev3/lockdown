@@ -74,7 +74,7 @@ def = {
                 return validator.isEmail(email);
             }
         },
-        valid: {
+        userValidation: {
             _type: Object,
             schema: {
                 confirmed: {
@@ -85,18 +85,25 @@ def = {
                     _type: String,
                     validator: function(tkn) {
                         return tkn.length === 4;
-                    }
+                    },
+                    default: (Math.floor(Math.random() * 9000) + 1000).toString()
                 },
                 link: {
                     _type: String,
                     validator: function(link) {
                         return validator.isAlphanumeric(link)
-                        && validator.isLength(link, 64, 128);
-                    }
+                        && link.length === 64;
+                    },
+                    default: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+                        .replace(/[xy]/g, function(c) {
+                        var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+                        return v.toString(16);
+                    });
                 }
             },
             options: {
-                enforce_missing: false // temp. we need to build the code to support this
+                enforce_missing: false, // temp. we need to build the code to support this
+                enforce_type: 'loose'
             }
         },
         settings: {
