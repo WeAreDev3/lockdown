@@ -121,7 +121,7 @@ if (cluster.isWorker) {
                     var salt = randomBytes.toString('base64');
                     newUser.passSalt = salt;
 
-                    return crypto.pbkdf2(new Buffer(req.body.password), salt,
+                    return crypto.pbkdf2(new Buffer(req.body.hash), salt,
                         config.crypt.iterations, config.crypt.hashSize);
                 })
                 .then(function(hash) {
@@ -141,7 +141,7 @@ if (cluster.isWorker) {
                     res.status(201);
                     res.send(user.id);
                 }, function(err) {
-                    console.log('User %s NOT added to the database.', user.displayUsername);
+                    console.log('User %s NOT added to the database.', newUser.displayUsername);
                     console.log(err.toString());
 
                     res.status(400);
