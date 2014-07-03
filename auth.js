@@ -2,7 +2,8 @@ var LocalStrategy = require('passport-local').Strategy,
     Promise = require('bluebird'),
     scrypt = require('scrypt'),
     crypto = require('crypto'),
-    scryptParameters = scrypt.params(0.1);
+    scryptParameters = scrypt.params(0.1),
+    config = require('./config');
 
 // promisify
 crypto.pbkdf2 = Promise.promisify(crypto.pbkdf2);
