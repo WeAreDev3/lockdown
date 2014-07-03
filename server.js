@@ -93,7 +93,7 @@ if (cluster.isWorker) {
                 });
             }
 
-            newUser = {
+            var newUser = {
                 displayUsername: req.body.username,
                 username: req.body.username.toLowerCase(),
                 passIter: config.crypt.iterations,

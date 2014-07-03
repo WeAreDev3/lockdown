@@ -1,7 +1,7 @@
 var thinky = require('thinky')({
-        db: 'lockdown',
-        min: 10
-    }),
+    db: 'lockdown',
+    min: 10
+}),
     r = thinky.r,
     validator = require('validator'),
     config = require('./config');
@@ -11,15 +11,13 @@ def = {
         id: String,
         username: {
             _type: String,
-            validator: function (name) {
-                return validator.isLength(name, 3, 128)
-                && validator.isAlphanumeric(name)
-                && validator.isLowercase(name);
+            validator: function(name) {
+                return validator.isLength(name, 3, 128) && validator.isAlphanumeric(name) && validator.isLowercase(name);
             }
         },
         passHash: {
             _type: String,
-            validator: function (hash) {
+            validator: function(hash) {
                 return hash.length === 128;
             }
         },
@@ -35,9 +33,8 @@ def = {
         },
         displayUsername: {
             _type: String,
-            validator: function (username) {
-                return validator.isLength(username, 3, 64)
-                && validator.isAlphanumeric(username);
+            validator: function(username) {
+                return validator.isLength(username, 3, 64) && validator.isAlphanumeric(username);
             }
         },
         sites: {
@@ -59,7 +56,7 @@ def = {
                 iter: Number,
                 salt: {
                     _type: String,
-                    validator: function (salt) {
+                    validator: function(salt) {
                         return salt.length === 44;
                     }
                 }
@@ -70,7 +67,7 @@ def = {
         },
         email: {
             _type: String,
-            validator: function (email) {
+            validator: function(email) {
                 return validator.isEmail(email);
             }
         },
@@ -91,8 +88,7 @@ def = {
                 link: {
                     _type: String,
                     validator: function(link) {
-                        return validator.isAlphanumeric(link)
-                        && link.length === 64;
+                        return validator.isAlphanumeric(link) && link.length === 64;
                     },
                     default: 'xxxxxxxx'.replace(/x/g, function(c) {
                         return (Math.random() * 1e16).toString(16).slice(0, 8);
@@ -147,13 +143,12 @@ def = {
         sessonSecret: {
             _type: String,
             validator: function(secret) {
-                return validator.isLength(secret, 64, 128)
-                && validator.isAlphanumeric(secret);
+                return validator.isLength(secret, 64, 128) && validator.isAlphanumeric(secret);
             }
         }
     }),
 
     r: r
-}
+};
 def.User.ensureIndex('username');
 module.exports = def;
