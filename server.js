@@ -1,5 +1,6 @@
 var app = require('express')(),
     bodyParser = require('body-parser'),
+    Promise = require('bluebird'),
     session = require('cookie-session'),
     crypto = require('crypto'),
     scrypt = require('scrypt'),
@@ -17,12 +18,17 @@ var app = require('express')(),
 
 if (numCPUtoFork >= 12) {
     numCPUtoFork = 10;
-} else if (numCPUtoFork >= 8){
-    numCPUtoFork = numCPUtoFork -2;
+} else if (numCPUtoFork >= 8) {
+    numCPUtoFork = numCPUtoFork - 2;
 } else if (numCPUtoFork > 1) {
     numCPUtoFork--;
 }
 if (cluster.isWorker) {
+    // promisify functions here
+    crypto.randomBytes = Promise.promisify(crypto.randomBytes);
+    crypto.pbkdf2 = Promise.promisify(crypto.pbkdf2);
+    scrypt.passwordHash = Promise.promisify(scrypt.passwordHash);
+
     app.use(bodyParser.json());
     app.use(session({
         secret: 'much secret. very hidden. wow.'
@@ -101,46 +107,43 @@ if (cluster.isWorker) {
                 username: req.body.username.toLowerCase(),
                 passIter: config.crypt.iterations,
                 passHashSize: config.crypt.hashSize,
+                email: req.body.email
             };
 
-            crypto.randomBytes(config.crypt.saltLength, function (er, randomBytes) {
-                if (er) {
-                    
-                } else {
+            crypto.randomBytes(config.crypt.saltLength)
+                .then(function(randomBytes) {
+                    console.log(1);
                     salt = randomBytes.toString('base64');
                     newUser.passSalt = salt;
-                    crypto.pbkdf2(new Buffer(req.body.password), salt, config.crypt.iterations,
-                        config.crypt.hashSize, function (er, hash) {
-                            if (er) {
+                    return crypto.pbkdf2(new Buffer(req.body.password), salt,
+                        config.crypt.iterations, config.crypt.hashSize);
+                })
+                .then(function(hash) {
+                    console.log(2);
+                    hash = hash.toString('base64');
+                    return scrypt.passwordHash(hash, config.crypt.scryptParameters);
+                })
+                .then(function(finalHash) {
+                    console.log(3);
+                    newUser.passHash = finalHash;
+                    user = new User(newUser);
+                    return user.save();
+                })
+                .then(function(user) {
+                    console.log(4);
+                    console.log('User %s %s added to the database.', user.firstName, user.lastName);
 
-                            } else {
-                                hash = hash.toString('base64');
-                                scrypt.passwordHash(hash, config.crypt.scryptParameters, function (er, finalHash) {
-                                    if (er) {
+                    res.status(201);
+                    res.send(user.id);
+                }, function(err) {
+                    console.log(5);
+                    console.log(err.toString());
 
-                                    } else {
-                                        newUser.passHash = finalHash;
-                                        user = new User(newUser);
-                                        user.save().then(function(user) {
-                                            console.log('User %s %s added to the database.', user.firstName, user.lastName);
-
-                                            res.status(201);
-                                            res.send(user.id);
-                                        }, function(err) {
-                                            console.log('User %s %s NOT created', user.firstName, user.lastName);
-                                            console.log(err.toString());
-
-                                            res.status(400);
-                                            res.send({
-                                                message: err.toString()
-                                            });
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                }
-            });
+                    res.status(400);
+                    res.send({
+                        message: err.toString()
+                    });
+                });
         });
     });
 
@@ -150,7 +153,9 @@ if (cluster.isWorker) {
 
             // Only allow people to delete themselves 
             if (username === req.user.username) {
-                User.getAll(username, {index:'username'}).run().then(function(user) {
+                User.getAll(username, {
+                    index: 'username'
+                }).run().then(function(user) {
                     user[0].delete().then(function(user) {
                         console.log('User %s %s removed from the database.', user.firstName, user.lastName);
 
