@@ -7,3 +7,6 @@ rethinkdb_data
 
 # Mac
 .DS_Store
+
+# Linux
+*~
