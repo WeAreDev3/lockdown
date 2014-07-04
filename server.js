@@ -31,7 +31,7 @@ if (numCPUtoFork >= 12) {
     numCPUtoFork--;
 }
 
-if (cluster.isWorker) {
+function startWorker(sessonSecret) {
     // promisify functions here
     crypto.randomBytes = Promise.promisify(crypto.randomBytes);
     crypto.pbkdf2 = Promise.promisify(crypto.pbkdf2);
@@ -39,12 +39,7 @@ if (cluster.isWorker) {
 
     app.use(bodyParser.json());
     app.use(session({
-        secret: db.Config.orderBy(r.desc('timestamp')).limit(1).run()
-            .then(function(setup) {
-                return setup.sessonSecret || 'such default secret. only have this until we implement setting secrets';
-            }, function(err) {
-                throw 'Killing worker ' + cluster.worker.id + '. Could not get secret';
-            })
+        secret: sessonSecret
     }));
 
     app.use(passport.initialize());
@@ -200,7 +195,17 @@ if (cluster.isWorker) {
         });
 
     app.listen(config.port);
-} else { // master process runs this
+}
+
+if (cluster.isWorker) {
+    db.Config.orderBy(r.desc('timestamp')).limit(1).run()
+        .then(function(setup) {
+            startWorker(setup.sessonSecret || 'such default secret. only have this until we implement setting secrets');
+        }, function(err) {
+            throw 'Killing worker ' + cluster.worker.id + '. Could not get secret';
+        });
+} else {
+    // master process runs this
     var restarter = 0,
         spawnedForks = 0;
     for (var i = 0; i < numCPUtoFork; i++) {
