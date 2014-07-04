@@ -136,7 +136,10 @@ def = {
         sessonSecret: {
             _type: String,
             validator: function(secret) {
-                return validator.isLength(secret, 64, 128) && validator.isAlphanumeric(secret);
+                if (!(secret.length >= 64 && secret.length <= 128 && validator.isAlphanumeric(secret))) {
+                    console.log('WARNING: Something is wrong with the sessonSecret in the database');
+                };
+                return true;
             }
         }
     }),
