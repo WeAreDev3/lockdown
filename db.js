@@ -95,7 +95,7 @@ def = {
                         return validator.isAlphanumeric(link) && link.length === 64;
                     },
                     default: 'xxxxxxxx'.replace(/x/g, function(c) {
-                        return (Math.random() * 1e16).toString(16).slice(0, 8);
+                        return (Math.random() * 1e16).toString(36).slice(0, 8);
                     })
                 }
             },
