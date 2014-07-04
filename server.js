@@ -1,20 +1,27 @@
+// core
 var app = require('express')(),
     bodyParser = require('body-parser'),
-    Promise = require('bluebird'),
     session = require('cookie-session'),
+
+    // cryptography
     crypto = require('crypto'),
     scrypt = require('scrypt'),
-    os = require('os'),
-    numCPUtoFork = os.cpus().length,
-    cluster = require('cluster'),
 
+    // helpers
+    Promise = require('bluebird'),
     db = require('./db'),
     User = db.User,
+    r = db.r,
+    config = require('./config'),
 
+    // clustering
+    numCPUtoFork = os.cpus().length,
+    os = require('os'),
+    cluster = require('cluster'),
+
+    // Authentication
     passport = require('passport'),
-    auth = require('./auth')(passport, db),
-
-    config = require('./config');
+    auth = require('./auth')(passport, db);
 
 if (numCPUtoFork >= 12) {
     numCPUtoFork = 10;
@@ -32,7 +39,13 @@ if (cluster.isWorker) {
 
     app.use(bodyParser.json());
     app.use(session({
-        secret: 'much secret. very hidden. wow.'
+        secret: db.Config.orderBy(r.desc('timestamp')).limit(1).run()
+                .then(function (setup) {
+                    console.log(setup[0].sessonSecret)
+                    return setup.sessonSecret;
+                }, function (err) {
+                    throw 'Killing worker ' + cluster.worker.id + '. Could not get secret';
+                })
     }));
 
     app.use(passport.initialize());
@@ -185,8 +198,9 @@ if (cluster.isWorker) {
         });
 
     app.listen(config.port);
-} else {
-    // master process runs this
+} else { // master process runs this
+    var restarter = 0,
+        spawnedForks = 0;
     for (var i = 0; i < numCPUtoFork; i++) {
         cluster.fork();
     }
@@ -195,11 +209,18 @@ if (cluster.isWorker) {
     // Cluster helpers
     cluster.on('exit', function(worker, code, signal) {
         // when a worker dies
-        console.log('worker %d died (%s). restarting...', worker.process.pid, signal || code);
-        cluster.fork();
+        console.log('worker %d died (%s).', worker.process.pid, signal || code);
+        if (restarter) {
+            restarter--;
+            console.log('Replacing a dead fork...');
+            cluster.fork();
+        };
     });
     cluster.on('online', function(worker) {
-        // when a worker is succcessfully spawned
-        console.log("Yay, the worker responded after it was forked");
+        // when a worker is successfully spawned
+        spawnedForks++;
+        if (spawnedForks > numCPUtoFork) {
+            console.log("Replacement successful.");
+        };
     });
 }
