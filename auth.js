@@ -52,7 +52,7 @@ module.exports = function(passport, db) {
                 // Can't find a way to convert scrypt.verifyHash into a promise
                 scrypt.verifyHash(user.passHash, hash.toString('base64'), function(err, isValid) {
                     // err_code 4 means invalid password
-                    if (err.err_code !== 4) {
+                    if (err && err.err_code !== 4) {
                         done(err, false);
                     } else {
                         if (isValid) {
