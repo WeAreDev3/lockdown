@@ -31,39 +31,43 @@ module.exports = function(passport, db) {
         usernameField: 'username',
         passwordField: 'clientHash'
     }, function(username, clientHash, done) {
+        var user;
+
         User.getAll(username, {
             index: 'username'
         }).pluck('passHash', 'passSalt', 'passIter', 'passHashSize', 'username')
             .execute().then(function(cursor) {
                 return cursor.next();
-            }).then(function(user) {
-                crypto.pbkdf2(new Buffer(clientHash), new Buffer(user.passSalt), user.passIter, user.passHashSize)
-                    .then(function(hash) {
-                        // Can't find a way to convert scrypt.verifyHash into a promise
-                        scrypt.verifyHash(user.passHash, hash.toString('base64'), function(err, isValid) {
-                            if (err) {
-                                done(err, false);
-                            } else {
-                                if (isValid) {
-                                    done(null, user);
-                                } else {
-                                    done(null, false, {
-                                        // Incorrect password
-                                        // TODO: Change to more ambiguous text
-                                        message: 'Invalid password'
-                                    });
-                                }
-                            }
-                        });
-                    }, function(err) {
-                        done(err);
-                    });
+            }).then(function(data) {
+                user = data;
+
+                return crypto.pbkdf2(new Buffer(clientHash), new Buffer(user.passSalt), user.passIter, user.passHashSize);
             }, function(err) {
                 done(null, false, {
                     // Invalid username
                     // TODO: Change to more ambiguous text
                     message: 'No user found'
                 });
+            }).then(function(hash) {
+                // Can't find a way to convert scrypt.verifyHash into a promise
+                scrypt.verifyHash(user.passHash, hash.toString('base64'), function(err, isValid) {
+                    // err_code 4 means invalid password
+                    if (err.err_code !== 4) {
+                        done(err, false);
+                    } else {
+                        if (isValid) {
+                            done(null, user);
+                        } else {
+                            done(null, false, {
+                                // Incorrect password
+                                // TODO: Change to more ambiguous text
+                                message: 'Invalid password'
+                            });
+                        }
+                    }
+                });
+            }, function(err) {
+                done(err);
             });
     }));
 
