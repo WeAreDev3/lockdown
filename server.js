@@ -40,12 +40,12 @@ if (cluster.isWorker) {
     app.use(bodyParser.json());
     app.use(session({
         secret: db.Config.orderBy(r.desc('timestamp')).limit(1).run()
-                .then(function (setup) {
-                    console.log(setup[0].sessonSecret)
-                    return setup.sessonSecret;
-                }, function (err) {
-                    throw 'Killing worker ' + cluster.worker.id + '. Could not get secret';
-                })
+            .then(function(setup) {
+                console.log(setup[0].sessonSecret);
+                return setup.sessonSecret;
+            }, function(err) {
+                throw 'Killing worker ' + cluster.worker.id + '. Could not get secret';
+            })
     }));
 
     app.use(passport.initialize());
@@ -110,7 +110,7 @@ if (cluster.isWorker) {
             index: 'username'
         }).run().then(function(dupeUser) {
             if (dupeUser.length) {
-                console.log('Username "%s" already exits, %s %s', req.body.username, req.body.firstName, req.body.lastName);
+                console.log('Username "%s" already exits', req.body.username);
 
                 // Username already exits, send 409 (Conflict)
                 res.status(409);
@@ -165,7 +165,7 @@ if (cluster.isWorker) {
                         message: err.toString()
                     });
                 });
-        }, function (err) {
+        }, function(err) {
             console.log(err.toString());
 
             res.status(400);
@@ -185,7 +185,7 @@ if (cluster.isWorker) {
                     index: 'username'
                 }).run().then(function(user) {
                     user[0].delete().then(function(user) {
-                        console.log('User %s %s removed from the database.', user.firstName, user.lastName);
+                        console.log('User %s removed from the database.', user.displayUsername);
 
                         res.status(204);
                         res.send();
@@ -217,13 +217,13 @@ if (cluster.isWorker) {
             restarter--;
             console.log('Replacing a dead fork...');
             cluster.fork();
-        };
+        }
     });
     cluster.on('online', function(worker) {
         // when a worker is successfully spawned
         spawnedForks++;
         if (spawnedForks > numCPUtoFork) {
             console.log("Replacement successful.");
-        };
+        }
     });
 }
