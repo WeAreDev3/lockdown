@@ -61,11 +61,14 @@ if (cluster.isWorker) {
         .get(function(req, res, next) {
             User.getAll(req.query.username.toLowerCase(), {
                 index: 'username'
-            }).run().then(function(clientCrypt) {
-                console.log(clientCrypt);
-                if (clientCrypt.length) {
-                    res.send(clientCrypt[0].clientCrypt);
-                }
+            }).pluck('clientCrypt').execute().then(function(cursor) {
+                return cursor.next();
+            }).then(function(user) {
+                res.send(user.clientCrypt);
+            }, function(err) {
+                console.log(err.toString());
+
+                res.send(400);
             });
         })
     // Sign in the user
@@ -134,7 +137,7 @@ if (cluster.isWorker) {
                     var salt = randomBytes.toString('base64');
                     newUser.passSalt = salt;
 
-                    return crypto.pbkdf2(new Buffer(req.body.hash), salt,
+                    return crypto.pbkdf2(new Buffer(req.body.clientHash), salt,
                         config.crypt.iterations, config.crypt.hashSize);
                 })
                 .then(function(hash) {

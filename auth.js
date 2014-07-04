@@ -33,42 +33,37 @@ module.exports = function(passport, db) {
     }, function(username, clientHash, done) {
         User.getAll(username, {
             index: 'username'
-        })
-            .pluck('passHash', 'passSalt', 'passIter', 'passHashSize', 'username')
-            .run().then(function(user) {
-                user = user[0];
-
-                if (user) {
-                    crypto.pbkdf2(new Buffer(clientHash), new Buffer(user.passSalt), user.passIter, user.passHashSize)
-                        .then(function(hash) {
-                            // Can't find a way to convert scrypt.verifyHash into a promise
-                            scrypt.verifyHash(user.passHash, hash.toString('base64'), function(err, isValid) {
-                                if (err) {
-                                    done(err, false);
+        }).pluck('passHash', 'passSalt', 'passIter', 'passHashSize', 'username')
+            .execute().then(function(cursor) {
+                return cursor.next();
+            }).then(function(user) {
+                crypto.pbkdf2(new Buffer(clientHash), new Buffer(user.passSalt), user.passIter, user.passHashSize)
+                    .then(function(hash) {
+                        // Can't find a way to convert scrypt.verifyHash into a promise
+                        scrypt.verifyHash(user.passHash, hash.toString('base64'), function(err, isValid) {
+                            if (err) {
+                                done(err, false);
+                            } else {
+                                if (isValid) {
+                                    done(null, user);
                                 } else {
-                                    if (isValid) {
-                                        done(null, user);
-                                    } else {
-                                        done(null, false, {
-                                            // Incorrect password
-                                            // TODO: Change to more ambiguous text
-                                            message: 'Invalid password'
-                                        });
-                                    }
+                                    done(null, false, {
+                                        // Incorrect password
+                                        // TODO: Change to more ambiguous text
+                                        message: 'Invalid password'
+                                    });
                                 }
-                            });
-                        }, function(err) {
-                            done(err);
+                            }
                         });
-                } else {
-                    done(null, false, {
-                        // Invalid username
-                        // TODO: Change to more ambiguous text
-                        message: 'No user found'
+                    }, function(err) {
+                        done(err);
                     });
-                }
             }, function(err) {
-                done(err, false);
+                done(null, false, {
+                    // Invalid username
+                    // TODO: Change to more ambiguous text
+                    message: 'No user found'
+                });
             });
     }));
 
