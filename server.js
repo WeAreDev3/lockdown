@@ -15,9 +15,9 @@ var app = require('express')(),
     config = require('./config'),
 
     // clustering
-    numCPUtoFork = os.cpus().length,
     os = require('os'),
     cluster = require('cluster'),
+    numCPUtoFork = os.cpus().length,
 
     // Authentication
     passport = require('passport'),
@@ -41,8 +41,7 @@ if (cluster.isWorker) {
     app.use(session({
         secret: db.Config.orderBy(r.desc('timestamp')).limit(1).run()
             .then(function(setup) {
-                console.log(setup[0].sessonSecret);
-                return setup.sessonSecret;
+                return setup.sessonSecret || 'such default secret. only have this until we implement setting secrets';
             }, function(err) {
                 throw 'Killing worker ' + cluster.worker.id + '. Could not get secret';
             })
