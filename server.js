@@ -16,9 +16,9 @@ var //core
     config = require('./config'),
 
     // clustering
-    numCPUtoFork = os.cpus().length,
     os = require('os'),
     cluster = require('cluster'),
+    numCPUtoFork = os.cpus().length,
 
     // Authentication
     passport = require('passport'),
@@ -32,7 +32,7 @@ if (numCPUtoFork >= 12) {
     numCPUtoFork--;
 }
 
-if (cluster.isWorker) {
+function startWorker(sessonSecret) {
     // promisify functions here
     crypto.randomBytes = Promise.promisify(crypto.randomBytes);
     crypto.pbkdf2 = Promise.promisify(crypto.pbkdf2);
@@ -40,13 +40,7 @@ if (cluster.isWorker) {
 
     app.use(bodyParser.json());
     app.use(session({
-        secret: db.Config.orderBy(r.desc('timestamp')).limit(1).run()
-                .then(function (setup) {
-                    console.log(setup[0].sessonSecret)
-                    return setup.sessonSecret;
-                }, function (err) {
-                    throw 'Killing worker ' + cluster.worker.id + '. Could not get secret';
-                })
+        secret: sessonSecret
     }));
 
     app.use(passport.initialize());
@@ -111,7 +105,7 @@ if (cluster.isWorker) {
             index: 'username'
         }).run().then(function(dupeUser) {
             if (dupeUser.length) {
-                console.log('Username "%s" already exits, %s %s', req.body.username, req.body.firstName, req.body.lastName);
+                console.log('Username "%s" already exits', req.body.username);
 
                 // Username already exits, send 409 (Conflict)
                 res.status(409);
@@ -166,7 +160,7 @@ if (cluster.isWorker) {
                         message: err.toString()
                     });
                 });
-        }, function (err) {
+        }, function(err) {
             console.log(err.toString());
 
             res.status(400);
@@ -186,7 +180,7 @@ if (cluster.isWorker) {
                     index: 'username'
                 }).run().then(function(user) {
                     user[0].delete().then(function(user) {
-                        console.log('User %s %s removed from the database.', user.firstName, user.lastName);
+                        console.log('User %s removed from the database.', user.displayUsername);
 
                         res.status(204);
                         res.send();
@@ -202,7 +196,17 @@ if (cluster.isWorker) {
         });
 
     app.listen(config.port);
-} else { // master process runs this
+}
+
+if (cluster.isWorker) {
+    db.Config.orderBy(r.desc('timestamp')).limit(1).run()
+        .then(function(setup) {
+            startWorker(setup.sessonSecret || 'such default secret. only have this until we implement setting secrets');
+        }, function(err) {
+            throw 'Killing worker ' + cluster.worker.id + '. Could not get secret';
+        });
+} else {
+    // master process runs this
     var restarter = 0,
         spawnedForks = 0;
     for (var i = 0; i < numCPUtoFork; i++) {
@@ -218,13 +222,13 @@ if (cluster.isWorker) {
             restarter--;
             console.log('Replacing a dead fork...');
             cluster.fork();
-        };
+        }
     });
     cluster.on('online', function(worker) {
         // when a worker is successfully spawned
         spawnedForks++;
         if (spawnedForks > numCPUtoFork) {
             console.log("Replacement successful.");
-        };
+        }
     });
 }
