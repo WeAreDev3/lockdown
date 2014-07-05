@@ -1,5 +1,6 @@
-// core
-var app = require('express')(),
+// depends
+var //core
+    app = require('express')(),
     bodyParser = require('body-parser'),
     session = require('cookie-session'),
 
