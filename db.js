@@ -53,22 +53,6 @@ def = {
                 type: String
             }
         },
-        clientCrypt: {
-            _type: Object,
-            schema: {
-                keyLength: Number,
-                iter: Number,
-                salt: {
-                    _type: String,
-                    validator: function(salt) {
-                        return salt.length === 44;
-                    }
-                }
-            },
-            options: {
-                enforce_type: 'strict'
-            }
-        },
         email: {
             _type: String,
             validator: function(email) {
