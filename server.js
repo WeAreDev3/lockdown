@@ -1,5 +1,6 @@
-// core
-var app = require('express')(),
+// depends
+var //core
+    app = require('express')(),
     bodyParser = require('body-parser'),
 
     // cryptography
@@ -139,7 +140,7 @@ if (cluster.isWorker) {
             var username = req.params.username;
 
             // Only allow people to delete themselves 
-            if (username === req.user.username) {
+            if (username === req.user.username) { // this needs to change when we use tokens (ask janka)
                 User.getAll(username, {
                     index: 'username'
                 }).run().then(function(user) {
