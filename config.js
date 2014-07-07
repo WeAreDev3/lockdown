@@ -4,8 +4,8 @@ var scrypt = require('scrypt'),
 
 def = {
     crypt: {
-        iterations: 1000,
-        saltLength: 32,
+        iterations: 5000,
+        saltLength: 64,
         hashSize: 512,
         scryptParameters: scrypt.params(0.1)
     },
