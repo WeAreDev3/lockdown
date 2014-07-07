@@ -34,31 +34,6 @@ Creates a new user.
 
 ## /signin
 
-### GET
-Retrieves the user's client encryption information.
-
-#### Data sent:
-```json
-{
-    "username": String
-}
-```
-
-- `username`: the user's username
-
-#### Data received:
-```json
-{
-    "salt": String,
-    "iter": Number,
-    "keyLength": Number
-}
-```
-
-- `salt`: the salt used for client PBKDF2
-- `iter`: the number of iterations for client PBKDF2
-- `keyLength`: the key length for client PBKDF2
-
 ### POST
 Authenticates user with given credentials.
 
@@ -181,4 +156,3 @@ Deletes all of the data associated with that site.
 
 #### Data received:
 If successful, the server returns a 204 (No Content) response with an empty body.
-
