@@ -24,7 +24,6 @@
         "rethinkdb": "latest",
         "passport": "latest",
         "passport-local": "latest",
-        "cookie-session": "^1.0.2",
         "scrypt": "3.0.1",
         "sjcl": "1.0.1",
         "validator": "3.16.0",

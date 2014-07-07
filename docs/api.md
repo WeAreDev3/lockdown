@@ -77,11 +77,6 @@ Authenticates user with given credentials.
 - If successful, the server returns a 200 (OK) response with an empty body.
 - If failed, the server returns a 401 (Unauthorized) response with an empty body.
 
-## /session
-
-### DELETE
-Removes authorization token from user's current session (i.e., signs them out).
-
 #### Data received:
 The server returns a 200 (OK) response with an empty body.
 

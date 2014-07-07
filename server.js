@@ -1,7 +1,6 @@
 // core
 var app = require('express')(),
     bodyParser = require('body-parser'),
-    session = require('cookie-session'),
 
     // cryptography
     crypto = require('crypto'),
@@ -38,12 +37,8 @@ function startWorker(sessonSecret) {
     scrypt.passwordHash = Promise.promisify(scrypt.passwordHash);
 
     app.use(bodyParser.json());
-    app.use(session({
-        secret: sessonSecret
-    }));
 
     app.use(passport.initialize());
-    app.use(passport.session());
 
     app.route('/').get(function(req, res) {
         res.json({
@@ -87,14 +82,6 @@ function startWorker(sessonSecret) {
                 res.send(200);
             });
         })(req, res, next);
-    });
-
-
-    app.route('/session')
-    // Delete the users's session, i.e. sign them out
-    .delete(function(req, res) {
-        req.logout();
-        res.send(204);
     });
 
     app.route('/users')

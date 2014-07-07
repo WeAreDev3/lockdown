@@ -116,15 +116,6 @@ def = {
             options: {
                 enforce_extra: false
             }
-        },
-        sessonSecret: {
-            _type: String,
-            validator: function(secret) {
-                if (!(secret.length >= 64 && secret.length <= 128 && validator.isAlphanumeric(secret))) {
-                    console.log('WARNING: Something is wrong with the sessonSecret in the database');
-                };
-                return true;
-            }
         }
     }),
 
