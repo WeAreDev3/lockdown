@@ -38,7 +38,7 @@ module.exports = function(passport, db) {
             }).then(function(data) {
                 user = data;
 
-                return crypto.pbkdf2(new Buffer(clientHash), new Buffer(user.passSalt), user.passIter, user.passHashSize);
+                return crypto.pbkdf2(clientHash, user.passSalt, user.passIter, user.passHashSize);
             }, function(err) {
                 done(null, false, {
                     // Invalid username
