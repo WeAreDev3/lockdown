@@ -12,19 +12,16 @@ module.exports = function(passport, db) {
     var User = db.User;
 
     passport.serializeUser(function(user, done) {
-        done(null, user.username);
+        done(null, user.id);
     });
 
-    passport.deserializeUser(function(username, done) {
-        User.getAll(username, {
-            index: 'username'
-        })
-            .run().then(function(user) {
-                user = user[0];
-                done(null, user);
-            }, function(err) {
-                done(err);
-            });
+    passport.deserializeUser(function(id, done) {
+        User.get(id).run().then(function(user) {
+            user = user[0];
+            done(null, user);
+        }, function(err) {
+            done(err);
+        });
     });
 
     passport.use(new LocalStrategy({
@@ -35,7 +32,7 @@ module.exports = function(passport, db) {
 
         User.getAll(username, {
             index: 'username'
-        }).pluck('passHash', 'passSalt', 'passIter', 'passHashSize', 'username')
+        }).pluck('passHash', 'passSalt', 'passIter', 'passHashSize', 'displayUsername', 'id')
             .execute().then(function(cursor) {
                 return cursor.next();
             }).then(function(data) {
