@@ -11,34 +11,41 @@ def = {
         id: String,
         username: {
             _type: String,
-            validator: function(name) {
-                return validator.isLength(name, 3, 128) && validator.isAlphanumeric(name) && validator.isLowercase(name);
-            }
-        },
-        passHash: {
-            _type: String,
-            validator: function(hash) {
-                return hash.length === 128;
-            }
-        },
-        passSalt: String,
-        passHashVersion: {
-            _type: Number,
-            default: 1
-        },
-        passIter: Number,
-        passHashSize: Number,
-        timestamp: {
-            _type: Date,
-            default: r.now(),
-            options: {
-                enforce_extra: false
+            validator: function(username) {
+                return validator.isLength(username, 3, 64) && validator.isAlphanumeric(username) && validator.isLowercase(username);
             }
         },
         displayUsername: {
             _type: String,
             validator: function(username) {
                 return validator.isLength(username, 3, 64) && validator.isAlphanumeric(username);
+            }
+        },
+        passHash: {
+            _type: String,
+            validator: function(hash) {
+                return validator.isLength(hash, 128);
+            }
+        },
+        passSalt: {
+            _type: String,
+            validator: function(salt) {
+                salt = salt.replace(/=/g, '');
+
+                return validator.isLength(salt, Math.ceil(config.crypt.saltLength * 4 / 3));
+            }
+        },
+        passIter: Number,
+        passHashSize: Number,
+        passHashVersion: {
+            _type: Number,
+            default: 1
+        },
+        timestamp: {
+            _type: Date,
+            default: r.now(),
+            options: {
+                enforce_extra: false
             }
         },
         sites: {
