@@ -60,13 +60,17 @@ if (cluster.isWorker) {
                 return res.send(401, info);
             }
 
+            console.log('Signing in', user);
+
             req.logIn(user, function(err) {
                 if (err) {
                     // 500 (Internal Server Error)
                     return res.send(500, err);
                 }
 
-                res.send(200);
+                res.send({
+                    username: user.displayUsername
+                });
             });
         })(req, res, next);
     });
@@ -74,6 +78,8 @@ if (cluster.isWorker) {
     app.route('/users')
     // Create a new user
     .post(function(req, res) {
+        var newUser;
+
         User.getAll(req.body.username.toLowerCase(), {
             index: 'username'
         }).run().then(function(dupeUser) {
@@ -87,58 +93,43 @@ if (cluster.isWorker) {
                 });
             }
 
-            var newUser = {
+            newUser = {
                 displayUsername: req.body.username,
                 username: req.body.username.toLowerCase(),
                 passIter: config.crypt.iterations,
                 passHashSize: config.crypt.hashSize,
-                email: req.body.email,
-                clientCrypt: {
-                    keyLength: req.body.keyLength,
-                    iter: req.body.iter,
-                    salt: req.body.salt
-                }
+                email: req.body.email
             };
 
-            crypto.randomBytes(config.crypt.saltLength)
-                .then(function(randomBytes) {
-                    var salt = randomBytes.toString('base64');
-                    newUser.passSalt = salt;
+            return crypto.randomBytes(config.crypt.saltLength);
+        }).then(function(randomBytes) {
+            var salt = randomBytes.toString('base64');
 
-                    return crypto.pbkdf2(new Buffer(req.body.clientHash), salt,
-                        config.crypt.iterations, config.crypt.hashSize);
-                })
-                .then(function(hash) {
-                    hash = hash.toString('base64');
+            newUser.passSalt = salt;
 
-                    return scrypt.passwordHash(hash, config.crypt.scryptParameters);
-                })
-                .then(function(finalHash) {
-                    newUser.passHash = finalHash;
-                    var user = new User(newUser);
+            return crypto.pbkdf2(req.body.clientHash, newUser.passSalt,
+                config.crypt.iterations, config.crypt.hashSize);
+        }).then(function(pbkdf2Hash) {
+            pbkdf2Hash = pbkdf2Hash.toString('base64');
 
-                    return user.save();
-                })
-                .then(function(user) {
-                    console.log('User %s added to the database.', user.displayUsername);
+            return scrypt.passwordHash(pbkdf2Hash, config.crypt.scryptParameters);
+        }).then(function(finalHash) {
+            newUser.passHash = finalHash;
+            console.dir(newUser);
+            var user = new User(newUser);
 
-                    res.status(201);
-                    res.send(user.id);
-                }, function(err) {
-                    console.log('User %s NOT added to the database.', newUser.displayUsername);
-                    console.log(err.toString());
+            return user.save();
+        }).then(function(user) {
+            console.log('User %s added to the database.', user.displayUsername);
 
-                    res.status(400);
-                    res.send({
-                        message: err.toString()
-                    });
-                });
+            res.status(201);
         }, function(err) {
+            console.log('User %s NOT added to the database.', req.body.username);
             console.log(err.toString());
 
             res.status(400);
             res.send({
-                message: "Database error. Try again"
+                message: err.toString()
             });
         });
     });
