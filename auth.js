@@ -51,16 +51,14 @@ module.exports = function(passport, db) {
                     // err_code 4 means invalid password
                     if (err && err.err_code !== 4) {
                         done(err, false);
+                    } else if (isValid) {
+                        done(null, user);
                     } else {
-                        if (isValid) {
-                            done(null, user);
-                        } else {
-                            done(null, false, {
-                                // Incorrect password
-                                // TODO: Change to more ambiguous text
-                                message: 'Invalid password'
-                            });
-                        }
+                        done(null, false, {
+                            // Incorrect password
+                            // TODO: Change to more ambiguous text
+                            message: 'Invalid password'
+                        });
                     }
                 });
             }, function(err) {
