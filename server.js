@@ -1,20 +1,20 @@
-// depends
-var //core
-    app = require('express')(),
+var // Core server
+    express = require('express'),
+    app = express(),
     bodyParser = require('body-parser'),
 
-    // cryptography
+    // Cryptography
     crypto = require('crypto'),
     scrypt = require('scrypt'),
 
-    // helpers
+    // Helpers
     Promise = require('bluebird'),
     db = require('./db'),
     User = db.User,
     r = db.r,
     config = require('./config'),
 
-    // clustering
+    // Clustering
     os = require('os'),
     cluster = require('cluster'),
     numCPUtoFork = os.cpus().length,
@@ -38,7 +38,6 @@ if (cluster.isWorker) {
     scrypt.passwordHash = Promise.promisify(scrypt.passwordHash);
 
     app.use(bodyParser.json());
-
     app.use(passport.initialize());
 
     app.route('/').get(function(req, res) {
